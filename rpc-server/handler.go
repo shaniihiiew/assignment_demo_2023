@@ -10,63 +10,52 @@ import (
 	"github.com/TikTokTechImmersion/assignment_demo_2023/rpc-server/kitex_gen/rpc"
 )
 
-// IMServiceImpl implements the last service interface defined in the IDL.
 type IMServiceImpl struct{}
 
 func (s *IMServiceImpl) Send(ctx context.Context, req *rpc.SendRequest) (*rpc.SendResponse, error) {
-	getRoomID(chat string) (string, error) {
-		senders := strings.Split(chat, ":")
-		if len(senders) != 2 {
-			return "", fmt.Errorf("invalid Chat ID '%s', should be in the format of user1:user2", chat)
-		}
+	import (
+    client := redis.NewClient(&redis.Options{
+        Addr:     "your-redis-address:6379",
+        Password: "your-redis-password", 
+        DB:       0,                     
+    })
 
-		sort.Strings(senders)
-		roomID := strings.Join(senders, ":")
+    pong, err := client.Ping().Result()
+    if err != nil {
+        return err
+    }
+    fmt.Println(pong) 
 
-		return roomID, nil
+    err = client.Set("your-key", "your-value", 0).Err()
+    if err != nil {
+        return err
+    }
+
+    // Request sent successfully
+    fmt.Println("Send request executed successfully")
+    return nil
 	}
 	resp := rpc.NewSendResponse()
 	resp.Code, resp.Messages = 0, "success"
 	return resp, nil
 }
-
-func getRoomID(chat string{}) {
 	
 }
 
 func (s *IMServiceImpl) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.PullResponse, error) {
-	roomID, err := getRoomID(req.GetChat())
-	if err != nil {
-		return nil, err
-	}
 
-	start := req.GetCursor()
-	end := start + int64(req.GetLimit())
-
-	messages, err := rdb.GetMessagesByRoomID(ctx, roomID, start, end, req.GetReverse())
-	if err != nil {
-		return nil, err
-	}
-
-	respMessages := make([]*rpc.Message, 0)
-	hasMore := len(messages) > int(req.GetLimit())
-	nextCursor := end
-	for _, msg := range messages {
-		temp := &rpc.Message{
-			Chat:     req.GetChat(),
-			Text:     msg.Message,
-			Sender:   msg.Sender,
-			SendTime: msg.Timestamp,
-		}
-		respMessages = append(respMessages, temp)
-	}
-
-	resp := &rpc.PullResponse{
-		Messages:    respMessages,
-		HasMore:     &hasMore,
-		NextCursor:  &nextCursor,
-	}
-	return resp, nil
+func pullMessages(start, end int64) ([]string, error) {
+    client := redis.NewClient(&redis.Options{
+        Addr:     "your-redis-address:6379",
+        Password: "your-redis-password", 
+        DB:       0,                    
+    })
+    result, err := client.ZRange("your-messages-key", start, end).Result()
+    if err != nil {
+        return nil, err
+    }
+    return result, nil
+}
 
 	resp := rpc.NewPullResponse()
 	resp.Code, resp.Messages = 0, "success"
