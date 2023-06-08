@@ -38,11 +38,8 @@ func (s *IMServiceImpl) Send(ctx context.Context, req *rpc.SendRequest) (*rpc.Se
         return nil, err
     }
 
-    resp := &rpc.SendResponse{
-        Code: 0, 
-        Msg:  "success",
-    }
-
+    resp := &rpc.SendResponse()
+    resp.Code, resp.Messages: 0, "success"
     return resp, nil
 }
 
@@ -80,12 +77,10 @@ func (s *IMServiceImpl) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.Pu
         counter += 1
     }
 
-    resp := &rpc.PullResponse{
-        Messages:    respMessages,
-        Code:        0,
-        Msg:         "success",
-        HasMore:     &hasMore,
-        NextCursor:  &nextCursor,
+	resp := &rpc.PullResponse()
+        resp.Code, resp.Messages = 0, respMessages
+        resp.HasMore = &hasMore,
+        resp.NextCursor = &nextCursor
     }
 
     return resp, nil
