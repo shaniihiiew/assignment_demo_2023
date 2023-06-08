@@ -1,9 +1,13 @@
 package main
 
 import (
-    "context"
-    "encoding/json"
-    "github.com/go-redis/redis"
+	"context"
+	"fmt"
+	"math/rand"
+	"sort"
+	"strings"
+	"github.com/TikTokTechImmersion/assignment_demo_2023/rpc-server/kitex_gen/rpc"
+   	"github.com/go-redis/redis"
 )
 
 type IMServiceImpl struct {
